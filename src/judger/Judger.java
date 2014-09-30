@@ -5,8 +5,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import kawa.standard.Scheme;
 
 /**
@@ -40,8 +44,8 @@ public class Judger {
         return buf.toString();
     }
 
-    public static String[] getAllFiles() {
-        File dir = new File(PATH);
+    public static String[] getAllFiles(String path) {
+        File dir = new File(path);
         return dir.list(new FilenameFilter() {
 
             @Override
@@ -73,10 +77,19 @@ public class Judger {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        for (String filename : getAllFiles()) {
-            System.out.println("ID:" + filename);
-            String script = loadScript(PATH + filename);
-            
+        if (args.length != 1) {
+            System.out.println("To run this judger: java -jar judger.jar ROOT_OF_A1");
+            return;
+        }
+        String path = args[0];
+        //LinkedHashMap<String, String> score = new LinkedHashMap<>();
+        TreeMap<String, String> score = new TreeMap<>();
+
+        for (String filename : getAllFiles(path)) {
+            String id = filename.replace(".scm", "");
+            System.out.println("ID:" + id);
+            String script = loadScript(path + "/" + filename);
+
             int successCount = 0;
 
             for (Map.Entry<String, String> entry : testCases.entrySet()) {
@@ -87,14 +100,30 @@ public class Judger {
                     successCount++;
                 }
             }
-            
+            score.put(id, successCount + "/" + testCases.size());
             System.out.println(successCount + "/" + testCases.size());
         }
+
+        System.out.println("Writing Result to file: a1.txt");
+
+        PrintWriter writer = null;
+        
+        try {
+            writer = new PrintWriter(new File("a1.txt"));
+            for(Map.Entry<String, String> entry : score.entrySet()){
+                writer.println(entry.getKey() + "\t" + entry.getValue());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+
+            writer.close();
+        }
+
     }
 
     public static Scheme scheme = new Scheme();
     public static Map<String, String> testCases = new HashMap<>();
-    public static final String PATH = "/Users/jeky/Dropbox/courses/440/a1/";
 
     static {
         testCases.put("(calculator '(1 + 2))", "3");
