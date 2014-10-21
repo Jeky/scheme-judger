@@ -129,6 +129,7 @@ public class Judger {
         testCases.put("(calculator '(1 + 2))", "3");
         testCases.put("(calculator '(1 - 2))", "-1");
         testCases.put("(calculator '(1 + 2 + 3 - 4))", "2");
+        testCases.put("(calculator '(1 + 2 - 3 + 4))", "4");
         testCases.put("(calculator '(1))", "1");
     }
 }
